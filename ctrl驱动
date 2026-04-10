@@ -1,0 +1,58 @@
+#include <STC15F2K60S2.H>
+#include <Typedef.H>
+
+#define ON 1
+#define OFF 0
+#define LED 0x80
+#define Y5 0xA0
+#define Motor 0x01
+#define Relay 0x02
+#define Buxx 0x04
+
+u8 State_Led=0xff;
+u8 State_Y5=0x00;
+
+void Ctrl(u8 addr,u8 dat,bit en)
+{
+bit val=0;u8 out =0;
+	switch(addr)
+	  {
+		case LED:
+			val=1;
+		if(dat==0xff)
+			State_Led=en?0x00:0xff;
+		else
+			State_Led=en?(State_Led&~dat):State_Led|dat;
+		 
+		out=State_Led;
+		break;
+		case Y5:
+			val=1;
+		if(dat==0xff)
+			State_Y5=en?0xff:0x00;
+		else
+			State_Y5=en?State_Y5|dat:(State_Y5&~dat);
+		 
+		out=State_Y5;
+		break;
+		
+		default:
+			val=0;
+		break;
+     
+		}
+		if(val)
+		{
+		 P0=out;
+		 P2=(P2&0x1f)|addr;
+		_nop_();
+		P2&=0x1f;
+		}
+		
+}
+
+void System_Init()
+{
+ Ctrl(LED,0xff,OFF);
+	Ctrl(Y5,0xff,OFF);
+}
